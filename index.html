@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>La Esquina / Menú </title>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <title>La Esquina - Menú</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script>
         tailwind.config = {
@@ -29,22 +29,42 @@
         };
     </script>
     <style type="text/tailwindcss">
-        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        @layer base {
+            body { @apply font-sans antialiased; -webkit-tap-highlight-color: transparent; }
+        }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        #search-overlay {
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .category-btn { @apply transition-all duration-300 ease-in-out border; }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
 
-<div id="search-overlay" class="fixed inset-0 bg-white/95 dark:bg-black/95 z-[100] hidden flex-col p-8 transition-all duration-300">
-    <div class="flex justify-end">
-        <button onclick="toggleSearch()" class="text-slate-400"><span class="material-symbols-outlined text-3xl">close</span></button>
+<!-- Buscador Overlay Dinámico -->
+<div id="search-overlay" class="fixed inset-0 bg-white/98 dark:bg-black/98 z-[100] hidden flex flex-col items-center overflow-y-auto pt-8 px-6">
+    <div class="w-full max-w-2xl flex justify-end mb-8">
+        <button onclick="toggleSearch()" class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
     </div>
-    <div class="mt-20 max-w-2xl mx-auto w-full">
-        <input type="text" id="menu-search" placeholder="¿Qué te apetece hoy?" 
-               class="w-full bg-transparent border-b-2 border-slate-200 dark:border-white/10 py-4 text-2xl font-serif focus:outline-none focus:border-accent transition-colors dark:text-white"
-               oninput="handleSearch(this.value)">
-        <p class="mt-4 text-slate-400 text-sm italic">Escribe para filtrar el menú en tiempo real...</p>
+    
+    <div class="w-full max-w-xl text-center mb-12">
+        <h2 class="font-serif text-3xl mb-6 text-slate-900 dark:text-white">¿Qué te apetece hoy?</h2>
+        <div class="relative group">
+            <input type="text" id="menu-search" placeholder="Escribe el nombre de un plato..." 
+                   class="w-full bg-transparent border-b-2 border-slate-200 dark:border-white/10 py-4 text-2xl focus:outline-none focus:border-accent transition-colors text-center font-serif placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-white"
+                   oninput="handleSearch(this.value)">
+        </div>
+        <p id="search-count" class="mt-4 text-[10px] uppercase tracking-widest text-slate-400 font-bold hidden">0 RESULTADOS ENCONTRADOS</p>
+    </div>
+
+    <div id="search-results" class="w-full max-w-2xl pb-20 space-y-8">
+        <!-- Los platos filtrados aparecen aquí -->
     </div>
 </div>
 
@@ -52,28 +72,32 @@
     <div class="px-6 pt-4 pb-2 flex flex-col gap-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-                <div class="w-7 h-7 rounded-full bg-primary dark:bg-white flex items-center justify-center">
-                    <span class="text-white dark:text-black font-serif text-sm font-bold">E</span>
-                </div>
-                <span class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-500 dark:text-slate-400">La Esquina</span>
+<!-- Logo simplificado sin fondo circular -->
+<img 
+    src="image-invert-removebg-preview.jpg" 
+    alt="Logo La Esquina" 
+    class="h-8 w-auto object-contain"
+>
+
+<span class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-600 dark:text-slate-400">La Esquina</span>
             </div>
             
             <div class="flex items-center gap-5">
-                <button onclick="toggleSearch()" class="text-slate-400 hover:text-accent transition-colors">
+                <button onclick="toggleSearch()" class="text-slate-500 hover:text-accent transition-colors">
                     <span class="material-symbols-outlined text-2xl">search</span>
                 </button>
-                <a href="https://instagram.com/laesquinard" target="_blank" class="text-slate-400 hover:text-accent transition-colors">
+                <a href="www.instagram.com/laesquinard" class="text-slate-500 hover:text-accent transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.269-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                 </a>
             </div>
         </div>
 
-        <div class="flex flex-col gap-5">
-            <h1 class="font-serif text-3xl font-normal tracking-tight text-slate-900 dark:text-slate-50">
+        <div class="flex flex-col gap-6">
+            <h1 class="font-serif text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                 Nuestro <span class="italic font-light">Menú</span>
             </h1>
-            <div id="category-filters" class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
-                <button id="btn-all" onclick="filterMenu('all')" class="category-btn flex-shrink-0 px-5 py-1.5 rounded-full bg-primary dark:bg-white text-white dark:text-black font-medium text-[11px] tracking-wide transition-all">
+            <div id="category-filters" class="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
+                <button id="btn-all" onclick="filterMenu('all', this)" class="category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase bg-primary text-white dark:bg-white dark:text-black border-transparent">
                     Todos
                 </button>
             </div>
@@ -81,15 +105,16 @@
     </div>
 </header>
 
-<main id="menu-container" class="mt-6 px-6 space-y-12 pb-8 flex-grow">
-    <div id="loader" class="flex justify-center py-20">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+<main id="menu-container" class="mt-8 px-6 space-y-16 pb-12 flex-grow">
+    <div id="loader" class="flex flex-col items-center justify-center py-20 gap-4">
+        <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Preparando el menú...</span>
     </div>
 </main>
 
-<footer class="px-6 py-8 border-t border-slate-100 dark:border-white/5 bg-white/30 dark:bg-black/20">
-    <p class="text-[10px] uppercase tracking-[0.2em] text-center text-slate-400 dark:text-slate-500 font-medium">
-        Precios expresados en moneda local. <br class="sm:hidden"> Impuestos no incluidos.
+<footer class="px-6 py-12 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-black/20 text-center">
+    <p class="text-[10px] uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 font-bold leading-relaxed">
+        Precios en RD$ <br/> Impuestos no incluidos.
     </p>
 </footer>
 
@@ -106,95 +131,132 @@
         try {
             const { data: categories, error: e1 } = await _supabase.from('menu_categories').select('*').order('sort_order', { ascending: true });
             const { data: items, error: e2 } = await _supabase.from('menu_items').select('*').eq('is_available', true);
+            
             if (e1 || e2) throw e1 || e2;
+            
             allCategories = categories;
             allItems = items;
-            renderCategories();
-            renderItems(allItems);
-        } catch (err) {
-            console.error("Error:", err);
-            document.getElementById('menu-container').innerHTML = `<p class="text-center text-red-500 py-10">Error de conexión.</p>`;
-        }
-    }
 
-    function toggleSearch() {
-        const overlay = document.getElementById('search-overlay');
-        overlay.classList.toggle('hidden');
-        if (!overlay.classList.contains('hidden')) {
-            document.getElementById('menu-search').focus();
+            renderCategories();
+            renderItems(allItems, 'menu-container');
+        } catch (err) {
+            console.error("Error cargando el menú:", err);
+            document.getElementById('menu-container').innerHTML = `<p class="text-center text-red-400 italic py-20">Error al conectar con la cocina.</p>`;
         }
     }
 
     function renderCategories() {
-        const filterContainer = document.getElementById('category-filters');
-        allCategories.forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = "category-btn flex-shrink-0 px-5 py-1.5 rounded-full bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 font-medium text-[11px] tracking-wide border border-slate-200/60 dark:border-white/10 transition-all";
-            btn.innerText = cat.name;
-            btn.onclick = (e) => filterMenu(cat.id, e.target);
-            filterContainer.appendChild(btn);
-        });
-    }
+        const container = document.getElementById('category-filters');
+        
+        // Obtenemos los IDs de las categorías que realmente tienen platos disponibles
+        const usedCategoryIds = [...new Set(allItems.map(item => item.category_id))];
 
-    function renderItems(filteredItems) {
-        const menuContainer = document.getElementById('menu-container');
-        menuContainer.innerHTML = "";
-        if (filteredItems.length === 0) {
-            menuContainer.innerHTML = `<p class="text-center text-slate-400 py-10 italic">No se encontraron platos.</p>`;
-            return;
-        }
         allCategories.forEach(cat => {
-            const catItems = filteredItems.filter(i => i.category_id === cat.id);
-            if (catItems.length > 0) {
-                const section = document.createElement('section');
-                section.className = "menu-section";
-                section.innerHTML = `
-                    <div class="flex items-center gap-4 mb-8">
-                        <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase text-slate-400 dark:text-slate-600">${cat.name}</h2>
-                        <div class="h-[1px] flex-1 bg-slate-200/50 dark:bg-white/5"></div>
-                    </div>
-                    <div class="grid gap-8">
-                        ${catItems.map(item => `
-                            <div class="group">
-                                <div class="flex justify-between items-baseline mb-2">
-                                    <h3 class="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">${item.name}</h3>
-                                    <div class="h-[1px] flex-1 mx-4 border-b border-dotted border-slate-200 dark:border-white/10"></div>
-                                    <span class="font-serif italic font-bold text-black dark:text-white text-xl">$${item.price}</span>
-                                </div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-[90%]">
-                                    ${item.description || ''}
-                                </p>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                menuContainer.appendChild(section);
+            // Solo creamos el botón si la categoría tiene platos
+            if (usedCategoryIds.includes(cat.id)) {
+                const btn = document.createElement('button');
+                btn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-slate-100 dark:border-white/10 bg-white dark:bg-white/5 text-slate-500";
+                btn.innerText = cat.name;
+                btn.onclick = () => filterMenu(cat.id, btn);
+                container.appendChild(btn);
             }
         });
     }
 
-    function handleSearch(query) {
-        const searchTerm = query.toLowerCase().trim();
-        const filtered = allItems.filter(item => 
-            item.name.toLowerCase().includes(searchTerm) || 
-            (item.description && item.description.toLowerCase().includes(searchTerm))
-        );
-        renderItems(filtered);
+    function renderItems(itemsToRender, targetId) {
+        const container = document.getElementById(targetId);
+        container.innerHTML = "";
+
+        if (itemsToRender.length === 0) {
+            container.innerHTML = `<p class="text-center text-slate-400 py-10 italic">No hay platos que coincidan.</p>`;
+            return;
+        }
+
+        if (targetId === 'menu-container') {
+            allCategories.forEach(cat => {
+                const catItems = itemsToRender.filter(i => i.category_id === cat.id);
+                if (catItems.length > 0) {
+                    const section = document.createElement('section');
+                    section.className = "menu-section mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500";
+                    section.innerHTML = `
+                        <div class="flex items-center gap-4 mb-10">
+                            <h2 class="text-[10px] font-black tracking-[0.5em] uppercase text-slate-300 dark:text-slate-600">${cat.name}</h2>
+                            <div class="h-[1px] flex-1 bg-slate-100 dark:bg-white/5"></div>
+                        </div>
+                        <div class="grid gap-10">
+                            ${catItems.map(item => generateItemHTML(item)).join('')}
+                        </div>
+                    `;
+                    container.appendChild(section);
+                }
+            });
+        } else {
+            container.innerHTML = `<div class="grid gap-10">${itemsToRender.map(item => generateItemHTML(item)).join('')}</div>`;
+        }
+    }
+
+    function generateItemHTML(item) {
+        return `
+            <div class="group">
+                <div class="flex justify-between items-baseline mb-3">
+                    <h3 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white uppercase">${item.name}</h3>
+                    <div class="h-[1px] flex-1 mx-4 border-b border-dotted border-slate-200 dark:border-white/10"></div>
+                    <span class="font-serif italic font-bold text-black dark:text-white text-2xl">$${item.price}</span>
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-[85%]">${item.description || ''}</p>
+            </div>
+        `;
     }
 
     function filterMenu(id, targetBtn) {
-        updateCategoryStyles(targetBtn);
-        const filtered = id === 'all' ? allItems : allItems.filter(item => item.category_id === id);
-        renderItems(filtered);
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black', 'border-transparent');
+            btn.classList.add('bg-white', 'text-slate-500', 'dark:bg-white/5', 'border-slate-100', 'dark:border-white/10');
+        });
+
+        targetBtn.classList.remove('bg-white', 'text-slate-500', 'dark:bg-white/5', 'border-slate-100', 'dark:border-white/10');
+        targetBtn.classList.add('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black', 'border-transparent');
+
+        const filtered = id === 'all' ? allItems : allItems.filter(i => i.category_id === id);
+        renderItems(filtered, 'menu-container');
     }
 
-    function updateCategoryStyles(targetBtn) {
-        document.querySelectorAll('.category-btn').forEach(b => {
-            b.classList.remove('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black');
-            b.classList.add('bg-white', 'text-slate-500', 'dark:bg-white/5');
-        });
-        const active = targetBtn || document.getElementById('btn-all');
-        active.classList.add('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black');
+    function toggleSearch() {
+        const overlay = document.getElementById('search-overlay');
+        const isHidden = overlay.classList.contains('hidden');
+        
+        if (isHidden) {
+            overlay.classList.remove('hidden');
+            setTimeout(() => document.getElementById('menu-search').focus(), 100);
+        } else {
+            overlay.classList.add('hidden');
+            document.getElementById('menu-search').value = "";
+            document.getElementById('search-results').innerHTML = "";
+            document.getElementById('search-count').classList.add('hidden');
+        }
+    }
+
+    function handleSearch(query) {
+        const term = query.toLowerCase().trim();
+        const countLabel = document.getElementById('search-count');
+        const resultsContainer = document.getElementById('search-results');
+
+        if (term.length === 0) {
+            resultsContainer.innerHTML = "";
+            countLabel.classList.add('hidden');
+            return;
+        }
+
+        const filtered = allItems.filter(i => 
+            i.name.toLowerCase().includes(term) || 
+            (i.description && i.description.toLowerCase().includes(term))
+        );
+
+        countLabel.innerText = `${filtered.length} RESULTADOS ENCONTRADOS`;
+        countLabel.classList.remove('hidden');
+        
+        renderItems(filtered, 'search-results');
+        renderItems(filtered, 'menu-container');
     }
 
     document.addEventListener('DOMContentLoaded', loadData);
