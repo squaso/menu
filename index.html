@@ -1,315 +1,204 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>La Esquina | Gastrobar</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Supabase JS -->
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>La Esquina / Menú </title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=DM+Sans:opsz,wght@9..40,400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Material Symbols -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-
-    <style>
-        body { 
-            font-family: 'DM Sans', sans-serif; 
-            background-color: #faf9f6; /* Stone 50 */
-            color: #1c1917; /* Stone 900 */
-            -webkit-tap-highlight-color: transparent;
-        }
-        .font-brand { font-family: 'Caveat', cursive; }
-        
-        /* Hide Scrollbar */
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Chips */
-        .chip {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .chip-active {
-            background-color: #1c1917; /* Stone 900 */
-            color: #fafaf9;
-            border-color: transparent;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .chip-inactive {
-            background-color: #e7e5e4; /* Stone 200 */
-            color: #57534e;
-            border-color: transparent;
-        }
-
-        /* Search Bar Focus Animation */
-        .search-container:focus-within {
-            transform: scale(1.02);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border-color: #f59e0b;
-        }
-
-        /* Card Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .menu-item {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#111111",
+                        accent: "#B89B5E",
+                        "background-light": "#F9F9F9",
+                        "background-dark": "#080808",
+                    },
+                    fontFamily: {
+                        sans: ["Plus Jakarta Sans", "sans-serif"],
+                        serif: ["Playfair Display", "serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="pb-24">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
 
-    <!-- HEADER & SEARCH (Sticky) -->
-    <header class="sticky top-0 z-50 bg-[#faf9f6]/95 backdrop-blur-md border-b border-stone-200/50 pt-4 pb-2 px-4 shadow-sm transition-all duration-300">
-        
-        <!-- LOGO PRINCIPAL -->
-        <div class="flex justify-start items-center mb-4 pt-2">
-            <img src="La Esquina Logo_20250717_170538_0000 (2).png" 
-                 alt="La Esquina Gastrobar Logo" 
-                 class="h-16 w-auto object-contain">
-        </div>
+<div id="search-overlay" class="fixed inset-0 bg-white/95 dark:bg-black/95 z-[100] hidden flex-col p-8 transition-all duration-300">
+    <div class="flex justify-end">
+        <button onclick="toggleSearch()" class="text-slate-400"><span class="material-symbols-outlined text-3xl">close</span></button>
+    </div>
+    <div class="mt-20 max-w-2xl mx-auto w-full">
+        <input type="text" id="menu-search" placeholder="¿Qué te apetece hoy?" 
+               class="w-full bg-transparent border-b-2 border-slate-200 dark:border-white/10 py-4 text-2xl font-serif focus:outline-none focus:border-accent transition-colors dark:text-white"
+               oninput="handleSearch(this.value)">
+        <p class="mt-4 text-slate-400 text-sm italic">Escribe para filtrar el menú en tiempo real...</p>
+    </div>
+</div>
 
-        <!-- Search Bar -->
-        <div class="search-container relative transition-all duration-300 rounded-2xl bg-white border border-stone-200 shadow-sm mb-4">
-            <span class="material-symbols-rounded absolute left-4 top-3.5 text-stone-400">search</span>
-            <input type="text" id="searchInput" placeholder="¿Qué se te antoja hoy?" 
-                   class="w-full bg-transparent py-3.5 pl-12 pr-4 rounded-2xl outline-none text-stone-700 placeholder-stone-400 font-medium"
-                   onkeyup="filterMenu()">
-        </div>
-
-        <!-- Categories (Chips) -->
-        <nav id="categoryNav" class="flex overflow-x-auto gap-2 pb-2 hide-scroll snap-x">
-            <!-- Injected via JS -->
-            <div class="w-20 h-9 bg-stone-200 rounded-full animate-pulse flex-shrink-0"></div>
-            <div class="w-24 h-9 bg-stone-200 rounded-full animate-pulse flex-shrink-0"></div>
-            <div class="w-20 h-9 bg-stone-200 rounded-full animate-pulse flex-shrink-0"></div>
-        </nav>
-    </header>
-
-    <!-- MENU LIST -->
-    <main class="px-4 pt-6 min-h-screen">
-        
-        <!-- Loader -->
-        <div id="menuLoader" class="flex flex-col items-center justify-center py-20">
-            <div class="w-10 h-10 border-4 border-stone-200 border-t-amber-500 rounded-full animate-spin"></div>
-            <p class="mt-4 text-stone-400 text-sm font-medium animate-pulse">Preparando menú...</p>
-        </div>
-
-        <!-- Content -->
-        <div id="menuContent" class="space-y-10 hidden pb-10">
-            <!-- Items injected via JS -->
-        </div>
-        
-        <!-- Empty State (Search or No Data) -->
-        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center px-6">
-            <div class="w-20 h-20 bg-stone-100 rounded-full flex items-center justify-center mb-4">
-                <span class="material-symbols-rounded text-4xl text-stone-300">search_off</span>
+<header class="bg-white/80 dark:bg-black/60 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100 dark:border-white/5">
+    <div class="px-6 pt-4 pb-2 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-primary dark:bg-white flex items-center justify-center">
+                    <span class="text-white dark:text-black font-serif text-sm font-bold">E</span>
+                </div>
+                <span class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-500 dark:text-slate-400">La Esquina</span>
             </div>
-            <h2 class="text-lg font-bold text-stone-700">No encontramos ese plato</h2>
-            <p class="text-stone-400 text-sm mt-1 max-w-[200px]">Intenta buscar por categoría o ingrediente.</p>
+            
+            <div class="flex items-center gap-5">
+                <button onclick="toggleSearch()" class="text-slate-400 hover:text-accent transition-colors">
+                    <span class="material-symbols-outlined text-2xl">search</span>
+                </button>
+                <a href="https://instagram.com/laesquinard" target="_blank" class="text-slate-400 hover:text-accent transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.269-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+            </div>
         </div>
-    </main>
 
-    <!-- LOGIC -->
-    <script>
-        const SB_URL = 'https://bxvaxcbbwhheuzlpmaex.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dmF4Y2Jid2hoZXV6bHBtYWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNzYxMjMsImV4cCI6MjA4NTY1MjEyM30.pIdYQfccwMrgj8Swzih2PRcqTt6_Povv_3Vp-FUGgeo';
-        const _supabase = supabase.createClient(SB_URL, SB_KEY);
-
-        let allMenuItems = [];
-        let categoriesList = []; // Para guardar el orden correcto de DB
-        let activeCategory = 'all';
-
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', async () => {
-            // Cargamos categorías y platos en paralelo
-            await Promise.all([fetchCategories(), fetchMenu()]);
-            
-            document.getElementById('menuLoader').style.display = 'none';
-
-            if (!allMenuItems || allMenuItems.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-                document.querySelector('#emptyState h2').innerText = "El menú no está disponible";
-                return;
-            }
-
-            renderCategories();
-            renderMenu(allMenuItems);
-        });
-
-        // --- FETCH DATA ---
-        async function fetchCategories() {
-            const { data, error } = await _supabase
-                .from('menu_categories')
-                .select('*')
-                .order('sort_order', { ascending: true });
-            
-            if (!error && data) {
-                categoriesList = data;
-            }
-        }
-
-        async function fetchMenu() {
-            // IMPORTANTE: Solicitamos '*, menu_categories(name)' para obtener el nombre de la categoría
-            const { data, error } = await _supabase
-                .from('menu_items')
-                .select('*, menu_categories(name, id)')
-                .eq('is_available', true);
-
-            if (!error && data) {
-                // Normalizamos los datos para facilitar el uso
-                allMenuItems = data.map(item => ({
-                    ...item,
-                    // Si menu_categories existe, usamos el nombre, si no, 'Otros'
-                    category_name: item.menu_categories ? item.menu_categories.name : 'Otros',
-                    category_id: item.menu_categories ? item.menu_categories.id : 9999
-                }));
-            }
-        }
-
-        // --- RENDER CATEGORIES ---
-        function renderCategories() {
-            const nav = document.getElementById('categoryNav');
-            
-            // Filtramos solo categorías que tengan al menos un plato activo
-            const activeCategoryNames = new Set(allMenuItems.map(i => i.category_name));
-            
-            // Usamos categoriesList para mantener el ORDEN definido en Admin
-            const sortedCategories = categoriesList
-                .filter(c => activeCategoryNames.has(c.name))
-                .map(c => c.name);
-
-            // Si hay platos sin categoría asignada (o categoría borrada), los añadimos al final
-            if (activeCategoryNames.has('Otros')) {
-                sortedCategories.push('Otros');
-            }
-
-            nav.innerHTML = `
-                <button onclick="setCategory('all', this)" class="chip chip-active h-10 px-5 rounded-full text-sm font-bold whitespace-nowrap flex items-center snap-start border border-stone-200">
+        <div class="flex flex-col gap-5">
+            <h1 class="font-serif text-3xl font-normal tracking-tight text-slate-900 dark:text-slate-50">
+                Nuestro <span class="italic font-light">Menú</span>
+            </h1>
+            <div id="category-filters" class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                <button id="btn-all" onclick="filterMenu('all')" class="category-btn flex-shrink-0 px-5 py-1.5 rounded-full bg-primary dark:bg-white text-white dark:text-black font-medium text-[11px] tracking-wide transition-all">
                     Todos
                 </button>
-            `;
+            </div>
+        </div>
+    </div>
+</header>
 
-            sortedCategories.forEach(cat => {
-                nav.innerHTML += `
-                    <button onclick="setCategory('${cat}', this)" class="chip chip-inactive h-10 px-5 rounded-full text-sm font-medium whitespace-nowrap flex items-center snap-start border border-stone-200">
-                        ${cat}
-                    </button>
-                `;
-            });
+<main id="menu-container" class="mt-6 px-6 space-y-12 pb-8 flex-grow">
+    <div id="loader" class="flex justify-center py-20">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+    </div>
+</main>
+
+<footer class="px-6 py-8 border-t border-slate-100 dark:border-white/5 bg-white/30 dark:bg-black/20">
+    <p class="text-[10px] uppercase tracking-[0.2em] text-center text-slate-400 dark:text-slate-500 font-medium">
+        Precios expresados en moneda local. <br class="sm:hidden"> Impuestos no incluidos.
+    </p>
+</footer>
+
+<script>
+    const SB_URL = "https://bxvaxcbbwhheuzlpmaex.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4dmF4Y2Jid2hoZXV6bHBtYWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNzYxMjMsImV4cCI6MjA4NTY1MjEyM30.pIdYQfccwMrgj8Swzih2PRcqTt6_Povv_3Vp-FUGgeo";
+    
+    const _supabase = window.supabase.createClient(SB_URL, SB_KEY);
+    
+    let allCategories = [];
+    let allItems = [];
+
+    async function loadData() {
+        try {
+            const { data: categories, error: e1 } = await _supabase.from('menu_categories').select('*').order('sort_order', { ascending: true });
+            const { data: items, error: e2 } = await _supabase.from('menu_items').select('*').eq('is_available', true);
+            if (e1 || e2) throw e1 || e2;
+            allCategories = categories;
+            allItems = items;
+            renderCategories();
+            renderItems(allItems);
+        } catch (err) {
+            console.error("Error:", err);
+            document.getElementById('menu-container').innerHTML = `<p class="text-center text-red-500 py-10">Error de conexión.</p>`;
         }
+    }
 
-        // --- FILTERING LOGIC ---
-        function setCategory(cat, btn) {
-            activeCategory = cat;
-            
-            // UI Update
-            document.querySelectorAll('.chip').forEach(c => {
-                c.classList.remove('chip-active');
-                c.classList.add('chip-inactive');
-            });
-            btn.classList.remove('chip-inactive');
-            btn.classList.add('chip-active');
-            
-            // Scroll selected chip into view
-            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-
-            // Clear search when switching category
-            const searchInput = document.getElementById('searchInput');
-            searchInput.value = '';
-
-            filterMenu();
+    function toggleSearch() {
+        const overlay = document.getElementById('search-overlay');
+        overlay.classList.toggle('hidden');
+        if (!overlay.classList.contains('hidden')) {
+            document.getElementById('menu-search').focus();
         }
+    }
 
-        function filterMenu() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const container = document.getElementById('menuContent');
-            const emptyState = document.getElementById('emptyState');
+    function renderCategories() {
+        const filterContainer = document.getElementById('category-filters');
+        allCategories.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = "category-btn flex-shrink-0 px-5 py-1.5 rounded-full bg-white dark:bg-white/5 text-slate-500 dark:text-slate-400 font-medium text-[11px] tracking-wide border border-slate-200/60 dark:border-white/10 transition-all";
+            btn.innerText = cat.name;
+            btn.onclick = (e) => filterMenu(cat.id, e.target);
+            filterContainer.appendChild(btn);
+        });
+    }
 
-            let filtered = allMenuItems;
-
-            // 1. Filter by Category (usando category_name normalizado)
-            if (activeCategory !== 'all') {
-                filtered = filtered.filter(item => item.category_name === activeCategory);
-            }
-
-            // 2. Filter by Search
-            if (searchTerm.length > 0) {
-                filtered = filtered.filter(item => 
-                    item.name.toLowerCase().includes(searchTerm) || 
-                    (item.description && item.description.toLowerCase().includes(searchTerm))
-                );
-            }
-
-            // 3. Render
-            if (filtered.length === 0) {
-                container.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-                document.querySelector('#emptyState h2').innerText = "No encontramos ese plato";
-            } else {
-                emptyState.classList.add('hidden');
-                renderMenu(filtered);
-            }
+    function renderItems(filteredItems) {
+        const menuContainer = document.getElementById('menu-container');
+        menuContainer.innerHTML = "";
+        if (filteredItems.length === 0) {
+            menuContainer.innerHTML = `<p class="text-center text-slate-400 py-10 italic">No se encontraron platos.</p>`;
+            return;
         }
-
-        // --- RENDER MENU ITEMS ---
-        function renderMenu(items) {
-            const container = document.getElementById('menuContent');
-            container.classList.remove('hidden');
-            container.innerHTML = '';
-
-            // Group by category_name
-            const grouped = items.reduce((acc, item) => {
-                const cat = item.category_name;
-                if (!acc[cat]) acc[cat] = [];
-                acc[cat].push(item);
-                return acc;
-            }, {});
-
-            // Sort Categories for Display (usando el orden de DB)
-            const sortedCats = Object.keys(grouped).sort((a, b) => {
-                const idxA = categoriesList.findIndex(c => c.name === a);
-                const idxB = categoriesList.findIndex(c => c.name === b);
-                // Si no está en la lista (ej. 'Otros'), va al final
-                const valA = idxA === -1 ? 9999 : categoriesList[idxA].sort_order;
-                const valB = idxB === -1 ? 9999 : categoriesList[idxB].sort_order;
-                return valA - valB;
-            });
-
-            sortedCats.forEach(cat => {
+        allCategories.forEach(cat => {
+            const catItems = filteredItems.filter(i => i.category_id === cat.id);
+            if (catItems.length > 0) {
                 const section = document.createElement('section');
-                section.className = "space-y-4";
-                
+                section.className = "menu-section";
                 section.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <h2 class="text-2xl font-bold text-stone-800 tracking-tight">${cat}</h2>
-                        <div class="h-px bg-stone-200 flex-1"></div>
+                    <div class="flex items-center gap-4 mb-8">
+                        <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase text-slate-400 dark:text-slate-600">${cat.name}</h2>
+                        <div class="h-[1px] flex-1 bg-slate-200/50 dark:bg-white/5"></div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        ${grouped[cat].map((item, index) => `
-                            <article class="menu-item bg-white p-5 rounded-2xl shadow-sm border border-stone-100 flex flex-col justify-between group hover:border-amber-200 transition-colors" style="animation-delay: ${index * 50}ms">
-                                <div class="flex justify-between items-start gap-4">
-                                    <div>
-                                        <h3 class="text-lg font-bold text-stone-900 leading-tight">${item.name}</h3>
-                                        ${item.description ? `<p class="text-stone-500 text-sm mt-2 leading-relaxed">${item.description}</p>` : ''}
-                                    </div>
-                                    <span class="text-amber-700 font-bold bg-amber-50 px-3 py-1 rounded-lg text-sm whitespace-nowrap">
-                                        $${item.price}
-                                    </span>
+                    <div class="grid gap-8">
+                        ${catItems.map(item => `
+                            <div class="group">
+                                <div class="flex justify-between items-baseline mb-2">
+                                    <h3 class="font-semibold text-lg tracking-tight text-slate-900 dark:text-white">${item.name}</h3>
+                                    <div class="h-[1px] flex-1 mx-4 border-b border-dotted border-slate-200 dark:border-white/10"></div>
+                                    <span class="font-serif italic font-bold text-black dark:text-white text-xl">$${item.price}</span>
                                 </div>
-                            </article>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-[90%]">
+                                    ${item.description || ''}
+                                </p>
+                            </div>
                         `).join('')}
                     </div>
                 `;
-                container.appendChild(section);
-            });
-        }
-    </script>
+                menuContainer.appendChild(section);
+            }
+        });
+    }
+
+    function handleSearch(query) {
+        const searchTerm = query.toLowerCase().trim();
+        const filtered = allItems.filter(item => 
+            item.name.toLowerCase().includes(searchTerm) || 
+            (item.description && item.description.toLowerCase().includes(searchTerm))
+        );
+        renderItems(filtered);
+    }
+
+    function filterMenu(id, targetBtn) {
+        updateCategoryStyles(targetBtn);
+        const filtered = id === 'all' ? allItems : allItems.filter(item => item.category_id === id);
+        renderItems(filtered);
+    }
+
+    function updateCategoryStyles(targetBtn) {
+        document.querySelectorAll('.category-btn').forEach(b => {
+            b.classList.remove('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black');
+            b.classList.add('bg-white', 'text-slate-500', 'dark:bg-white/5');
+        });
+        const active = targetBtn || document.getElementById('btn-all');
+        active.classList.add('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+</script>
+
 </body>
 </html>
