@@ -3,200 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin | La Esquina</title>
+    <title>Admin Premium | La Esquina</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- SortableJS para arrastrar y soltar fluido en móviles y PC -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-    <style>
-        body { font-family: 'DM Sans', sans-serif; background-color: #f0f4f8; -webkit-tap-highlight-color: transparent; }
-        
-        /* Floating Action Button */
-        .fab {
-            box-shadow: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif']
+                    },
+                    colors: {
+                        primary: '#111111',
+                        accent: '#B89B5E',
+                        surface: '#FFFFFF',
+                        bg: '#F8F8F8'
+                    }
+                }
+            }
         }
-        .fab:active { transform: scale(0.95); }
+    </script>
 
-        /* Accordion Marker remove default */
+    <style type="text/tailwindcss">
+        @layer base {
+            body { @apply bg-bg text-primary antialiased; }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full; }
+        
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
-
-        /* Drag Handle Styles */
-        .drag-handle { cursor: grab; touch-action: none; }
-        .drag-handle:active { cursor: grabbing; }
-        .sortable-ghost { opacity: 0.4; background-color: #e2e8f0; border: 2px dashed #94a3b8; }
-        .sortable-drag { opacity: 1; background-color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transform: scale(1.02); }
-
-        /* Dialog Animation */
-        dialog { opacity: 0; transform: translateY(20px); transition: all 0.3s allow-discrete; }
-        dialog[open] { opacity: 1; transform: translateY(0); }
-        dialog::backdrop { background-color: rgba(0, 0, 0, 0); transition: all 0.3s allow-discrete; }
-        dialog[open]::backdrop { background-color: rgba(0, 0, 0, 0.5); }
-        @starting-style {
-            dialog[open] { opacity: 0; transform: translateY(20px); }
-            dialog[open]::backdrop { background-color: rgba(0, 0, 0, 0); }
+        
+        .sortable-ghost { @apply opacity-40 bg-accent/10 border-2 border-dashed border-accent; }
+        
+        /* Animación pantalla completa */
+        dialog#itemDialog {
+            @apply fixed inset-0 m-0 w-full h-full max-w-none max-h-none border-none p-0 bg-white;
+        }
+        
+        dialog::backdrop { @apply bg-primary/40 backdrop-blur-sm; transition: all 0.3s ease; }
+        
+        dialog[open] { animation: slideInFull 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        
+        @keyframes slideInFull {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="pb-24">
 
-    <div class="max-w-2xl mx-auto min-h-screen flex flex-col pb-24">
-        
-        <!-- HEADER -->
-        <header class="bg-white p-4 sticky top-0 z-30 flex justify-between items-center shadow-sm border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <a href="index.html" class="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition text-slate-600">
-                    <span class="material-symbols-rounded">arrow_back</span>
-                </a>
+    <!-- NAVIGATION -->
+    <nav class="bg-white/70 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 px-6 py-4">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-serif font-bold shadow-lg">E</div>
                 <div>
-                    <h1 class="text-lg font-bold text-slate-900 leading-tight">Panel Admin</h1>
-                    <p class="text-xs text-slate-500 font-medium" id="statsLabel">Cargando...</p>
+                    <h1 class="font-serif font-bold text-xl leading-none">Gestión Menú</h1>
+                    <p class="text-[10px] font-bold text-accent uppercase tracking-widest mt-1" id="statsLabel">Cargando...</p>
                 </div>
             </div>
-            
-            <!-- Botón Nueva Categoría -->
-            <button onclick="openCategoryModal()" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition border border-blue-100">
-                <span class="material-symbols-rounded text-sm">new_label</span>
-                Nueva Cat.
+            <button onclick="openCategoryModal()" class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
+                <span class="material-symbols-rounded text-slate-500">create_new_folder</span>
             </button>
-        </header>
-
-        <!-- SEARCH -->
-        <div class="px-4 py-4 bg-white border-b border-slate-100 sticky top-[73px] z-20">
-            <div class="relative">
-                <span class="material-symbols-rounded absolute left-3 top-2.5 text-slate-400">search</span>
-                <input type="text" id="searchInput" placeholder="Buscar plato..." onkeyup="filterList()" class="w-full bg-slate-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all outline-none placeholder-slate-400">
-            </div>
         </div>
+    </nav>
 
-        <!-- CONTENT LIST -->
-        <main class="flex-1 p-4">
-            <div id="adminList" class="space-y-4">
-                <!-- Skeleton Loader -->
-                <div class="animate-pulse space-y-3">
-                    <div class="h-14 bg-white rounded-xl w-full"></div>
-                    <div class="h-14 bg-white rounded-xl w-full"></div>
-                    <div class="h-14 bg-white rounded-xl w-full"></div>
-                </div>
-            </div>
-            
-            <!-- Empty State -->
-            <div id="emptyState" class="hidden py-12 text-center">
-                <span class="material-symbols-rounded text-4xl text-slate-300 mb-2">no_food</span>
-                <p class="text-slate-500 text-sm">No hay platos que coincidan.</p>
-            </div>
-        </main>
+    <!-- HEADER & SEARCH -->
+    <header class="px-6 pt-8 pb-4 max-w-4xl mx-auto">
+        <div class="relative group">
+            <span class="material-symbols-rounded absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input type="text" id="searchInput" placeholder="Filtrar platos..." onkeyup="filterList()" 
+                   class="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-6 text-sm focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all shadow-sm">
+        </div>
+    </header>
 
-        <!-- FAB (Add Item) -->
-        <button onclick="openModal()" class="fab fixed bottom-6 right-6 bg-amber-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center z-40 hover:bg-amber-700">
-            <span class="material-symbols-rounded text-3xl">add</span>
-        </button>
-    </div>
+    <!-- CONTENT -->
+    <main class="max-w-4xl mx-auto px-6 space-y-4" id="adminList">
+        <div class="animate-pulse space-y-4">
+            <div class="h-24 bg-white rounded-3xl"></div>
+            <div class="h-24 bg-white rounded-3xl"></div>
+        </div>
+    </main>
 
-    <!-- DIALOG (Modal Plato) -->
-    <dialog id="itemDialog" class="rounded-2xl p-0 w-[90%] max-w-md shadow-2xl m-auto backdrop:backdrop-blur-sm">
-        <form id="itemForm" method="dialog" onsubmit="handleSave(event)" class="flex flex-col bg-white overflow-hidden">
-            
-            <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
-                <div>
-                    <h3 id="modalTitle" class="text-lg font-bold text-amber-900">Nuevo Plato</h3>
-                </div>
-                <button type="button" onclick="document.getElementById('itemDialog').close()" class="text-amber-800 hover:bg-amber-100 rounded-full p-1 transition">
+    <!-- FAB -->
+    <button onclick="openModal()" class="fixed bottom-8 right-8 bg-primary text-white w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center z-50 hover:bg-accent transition-all active:scale-90">
+        <span class="material-symbols-rounded text-3xl">add</span>
+    </button>
+
+    <!-- ITEM DIALOG (PANTALLA COMPLETA) -->
+    <dialog id="itemDialog">
+        <form id="itemForm" method="dialog" onsubmit="handleSave(event)" class="flex flex-col h-full bg-white">
+            <!-- Header Fijo -->
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                <button type="button" onclick="this.closest('dialog').close()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500 transition-colors">
                     <span class="material-symbols-rounded">close</span>
                 </button>
+                <h3 id="modalTitle" class="font-serif text-xl font-bold">Nuevo Platillo</h3>
+                <div class="w-10"></div> <!-- Espaciador para centrar título -->
             </div>
             
-            <div class="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
+            <!-- Cuerpo Scrollable -->
+            <div class="flex-grow p-8 space-y-8 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="itemId">
                 
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre</label>
-                    <input type="text" id="itemName" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors placeholder-slate-300">
+                <!-- Toggle Disponibilidad -->
+                <div class="flex items-center justify-between p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold tracking-tight">Disponible en el Menú</span>
+                        <span class="text-[11px] text-slate-400">Si se desactiva, el plato no será visible.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="itemActive" class="sr-only peer" checked>
+                        <div class="w-12 h-6 bg-slate-200 rounded-full peer peer-checked:bg-accent peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-sm"></div>
+                    </label>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Precio (RD$)</label>
-                        <input type="number" id="itemPrice" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors placeholder-slate-300">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Nombre del Plato</label>
+                        <input type="text" id="itemName" required class="w-full bg-slate-50 border-b-2 border-slate-100 px-4 py-4 focus:border-accent outline-none transition-colors font-medium text-lg rounded-t-2xl" placeholder="Ej: Pizza Marguerita">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Categoría</label>
-                        <div class="relative">
-                            <select id="itemCategory" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors appearance-none">
-                                <option value="" disabled selected>Cargando...</option>
-                            </select>
-                            <span class="material-symbols-rounded absolute right-2 top-2.5 text-slate-400 pointer-events-none text-lg">expand_more</span>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Precio (RD$)</label>
+                            <input type="number" id="itemPrice" required class="w-full bg-slate-50 border-b-2 border-slate-100 px-4 py-4 focus:border-accent outline-none font-serif text-2xl rounded-t-2xl" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Sección</label>
+                            <div class="relative">
+                                <select id="itemCategory" required class="w-full bg-slate-50 border-b-2 border-slate-100 px-4 py-4 focus:border-accent outline-none bg-transparent appearance-none rounded-t-2xl">
+                                    <option value="" disabled selected>Elegir...</option>
+                                </select>
+                                <span class="material-symbols-rounded absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">expand_more</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Descripción</label>
-                    <textarea id="itemDesc" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors placeholder-slate-300"></textarea>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1 mb-2 block">Descripción Detallada</label>
+                        <textarea id="itemDesc" rows="4" class="w-full bg-slate-50 border-2 border-slate-100 p-4 rounded-2xl focus:border-accent outline-none text-sm resize-none leading-relaxed" placeholder="Describe los ingredientes, alérgenos o acompañamientos..."></textarea>
+                    </div>
                 </div>
-                
-                <input type="checkbox" id="itemActive" class="hidden"> 
             </div>
 
-            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center gap-3">
-                <button type="button" id="btnDelete" onclick="deleteCurrentItem()" class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-1 transition hidden">
-                    <span class="material-symbols-rounded text-lg">delete</span>
-                    <span>Borrar</span>
+            <!-- Footer Fijo -->
+            <div class="p-6 border-t border-slate-100 flex gap-4 bg-white sticky bottom-0">
+                <button type="button" id="btnDelete" onclick="deleteCurrentItem()" class="w-14 h-14 flex items-center justify-center text-red-400 bg-red-50 hover:bg-red-100 rounded-2xl transition-colors hidden shadow-sm">
+                    <span class="material-symbols-rounded">delete</span>
                 </button>
-                
-                <div class="flex gap-2 ml-auto">
-                    <button type="button" onclick="document.getElementById('itemDialog').close()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-200 rounded-lg transition">Cancelar</button>
-                    <button type="submit" class="px-5 py-2 bg-amber-600 text-white font-bold text-sm rounded-lg shadow-sm hover:bg-amber-700 transition flex items-center gap-1">
-                        <span class="material-symbols-rounded text-lg">check</span>
-                        Guardar
-                    </button>
-                </div>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- DIALOG (Modal Categoría) -->
-    <dialog id="categoryDialog" class="rounded-2xl p-0 w-[90%] max-w-sm shadow-2xl m-auto backdrop:backdrop-blur-sm">
-        <form id="categoryForm" method="dialog" onsubmit="handleSaveCategory(event)" class="flex flex-col bg-white overflow-hidden">
-            <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-blue-900">Nueva Categoría</h3>
-                <button type="button" onclick="document.getElementById('categoryDialog').close()" class="text-blue-800 hover:bg-blue-100 rounded-full p-1 transition">
-                    <span class="material-symbols-rounded">close</span>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Nombre de la Categoría</label>
-                    <input type="text" id="catName" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Ej. Bebidas">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Orden (Opcional)</label>
-                    <input type="number" id="catOrder" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="Ej. 10">
-                    <p class="text-[10px] text-slate-400 mt-1">Número más alto sale al final.</p>
-                </div>
-            </div>
-
-            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
-                <button type="button" onclick="document.getElementById('categoryDialog').close()" class="px-4 py-2 text-slate-600 font-bold text-sm hover:bg-slate-200 rounded-lg transition">Cancelar</button>
-                <button type="submit" class="px-5 py-2 bg-blue-600 text-white font-bold text-sm rounded-lg shadow-sm hover:bg-blue-700 transition flex items-center gap-1">
-                    <span class="material-symbols-rounded text-lg">save</span>
-                    Crear
+                <button type="submit" class="flex-1 bg-primary text-white font-bold rounded-2xl h-14 hover:bg-accent transition-all shadow-xl text-sm uppercase tracking-widest">
+                    Guardar Cambios
                 </button>
             </div>
         </form>
     </dialog>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-300 opacity-0 translate-y-10 z-[60] pointer-events-none w-max max-w-[90vw]">
-        <span id="toastIcon" class="material-symbols-rounded text-xl">check_circle</span>
-        <span id="toastMessage" class="font-medium text-sm">Operación exitosa</span>
+    <!-- CATEGORY DIALOG (NUEVA SECCIÓN) -->
+    <dialog id="categoryDialog" class="rounded-3xl shadow-2xl w-[95%] max-w-sm overflow-hidden">
+        <form id="categoryForm" method="dialog" onsubmit="handleSaveCategory(event)" class="bg-white p-8">
+            <h3 class="font-serif text-xl font-bold mb-6">Nueva Sección</h3>
+            <div class="space-y-4">
+                <input type="text" id="catName" required class="w-full border-b-2 border-slate-100 py-2 focus:border-accent outline-none font-medium" placeholder="Ej: Especiales del Mes">
+                <input type="number" id="catOrder" class="w-full border-b-2 border-slate-100 py-2 focus:border-accent outline-none text-sm" placeholder="Orden (Ej: 1, 2, 3)">
+            </div>
+            <div class="mt-8 flex gap-3">
+                <button type="button" onclick="this.closest('dialog').close()" class="flex-1 py-3 text-slate-400 font-bold text-sm">Cancelar</button>
+                <button type="submit" class="flex-1 bg-primary text-white font-bold rounded-xl py-3 hover:bg-accent transition-all">Crear</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-primary text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 opacity-0 translate-y-10 transition-all duration-300 pointer-events-none z-[60]">
+        <span class="material-symbols-rounded text-accent">check_circle</span>
+        <span id="toastMessage" class="text-xs font-bold uppercase tracking-wider">Éxito</span>
     </div>
 
     <script>
@@ -213,220 +202,117 @@
             await fetchMenu();
         });
 
-        // --- SORTABLE INIT ---
-        function initSortable() {
-            const list = document.getElementById('adminList');
-            
-            // Destruir instancia previa si existe para evitar duplicados al renderizar
-            if (sortableInstance) {
-                sortableInstance.destroy();
-            }
-
-            sortableInstance = new Sortable(list, {
-                animation: 150,
-                handle: '.drag-handle', // Solo permite arrastrar desde el icono
-                ghostClass: 'sortable-ghost',
-                dragClass: 'sortable-drag',
-                delay: 100, // Pequeño retraso en móviles para evitar scrolls accidentales
-                delayOnTouchOnly: true,
-                onEnd: async function (evt) {
-                    await saveNewOrder();
-                }
-            });
-        }
-
-        async function saveNewOrder() {
-            const list = document.getElementById('adminList');
-            const items = list.querySelectorAll('details[data-id]');
-            
-            // Construir mapa de promesas para actualizar
-            const updates = Array.from(items).map((el, index) => {
-                const id = el.dataset.id;
-                // Actualizar en Supabase
-                return _supabase.from('menu_categories').update({ sort_order: index }).eq('id', id);
-            });
-
-            if (updates.length > 0) {
-                showToast("Guardando orden...", false);
-                await Promise.all(updates);
-                showToast("Orden actualizado");
-                
-                // Actualizar array local para evitar saltos raros
-                await fetchCategories();
-            }
-        }
-
-        // --- UTILS: TOAST ---
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const msg = document.getElementById('toastMessage');
-            const icon = document.getElementById('toastIcon');
-            
-            msg.innerText = message;
-            icon.innerText = isError ? 'error' : 'check_circle';
-            
-            toast.className = `fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-300 z-[60] w-max max-w-[90vw] ${isError ? 'bg-red-600 text-white' : 'bg-slate-800 text-white'}`;
-            toast.classList.remove('opacity-0', 'translate-y-10');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10'), 3000);
-        }
-
-        // --- DATA FETCHING ---
         async function fetchCategories() {
-            const { data, error } = await _supabase.from('menu_categories').select('*').order('sort_order', { ascending: true });
-            if (error) { console.error("Error categorías:", error); return; }
+            const { data } = await _supabase.from('menu_categories').select('*').order('sort_order', { ascending: true });
             categories = data || [];
-            
-            // Populate Modal Select
-            const catSelect = document.getElementById('itemCategory');
-            catSelect.innerHTML = '<option value="" disabled selected>Selecciona...</option>';
-            categories.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id; 
-                opt.innerText = c.name;
-                catSelect.appendChild(opt);
-            });
+            const select = document.getElementById('itemCategory');
+            select.innerHTML = '<option value="" disabled selected>Elegir...</option>';
+            categories.forEach(c => select.innerHTML += `<option value="${c.id}">${c.name}</option>`);
         }
 
         async function fetchMenu() {
-            const { data, error } = await _supabase
-                .from('menu_items')
-                .select('*, menu_categories(name)')
-                .order('created_at', { ascending: false });
-                
-            if (error) { showToast("Error al cargar menú", true); return; }
-            
+            const { data } = await _supabase.from('menu_items').select('*, menu_categories(name)').order('created_at', { ascending: false });
             menuItems = data || [];
-            document.getElementById('statsLabel').innerText = `${menuItems.length} platos`;
-            filterList(); 
+            document.getElementById('statsLabel').innerText = `${menuItems.length} PLATOS REGISTRADOS`;
+            renderList(menuItems);
         }
 
-        // --- RENDER LIST ---
+        function openCategoryModal() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryDialog').showModal();
+        }
+
+        async function handleSaveCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('catName').value;
+            const order = parseInt(document.getElementById('catOrder').value) || (categories.length + 1);
+            
+            const { error } = await _supabase.from('menu_categories').insert([{ name, sort_order: order }]);
+            if (!error) {
+                document.getElementById('categoryDialog').close();
+                showToast("Sección creada");
+                await fetchCategories();
+                renderList(menuItems);
+            }
+        }
+
         function renderList(items) {
             const container = document.getElementById('adminList');
             container.innerHTML = '';
-            
-            if (items.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-                return;
-            } else {
-                document.getElementById('emptyState').classList.add('hidden');
-            }
-
             const grouped = items.reduce((acc, item) => {
-                const catId = item.category_id || 'uncategorized';
-                if (!acc[catId]) acc[catId] = [];
-                acc[catId].push(item);
+                const cid = item.category_id;
+                if (!acc[cid]) acc[cid] = [];
+                acc[cid].push(item);
                 return acc;
             }, {});
 
-            const renderedCats = new Set();
-
-            categories.forEach((cat) => {
-                const catItems = grouped[cat.id];
-                if (catItems && catItems.length > 0) {
-                    renderedCats.add(cat.id);
-                    container.appendChild(createAccordion(cat, catItems));
-                }
+            categories.forEach(cat => {
+                const catItems = grouped[cat.id] || [];
+                const details = document.createElement('details');
+                details.open = true;
+                details.dataset.id = cat.id;
+                details.className = "bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden mb-6";
+                details.innerHTML = `
+                    <summary class="px-6 py-5 cursor-pointer flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-rounded text-slate-300 drag-handle cursor-grab">drag_indicator</span>
+                            <h3 class="font-serif font-bold text-lg">${cat.name}</h3>
+                        </div>
+                        <span class="material-symbols-rounded text-slate-300 transition-transform">expand_more</span>
+                    </summary>
+                    <div class="divide-y divide-slate-50 border-t border-slate-50">
+                        ${catItems.length ? catItems.map(item => `
+                            <div class="p-6 flex items-center justify-between ${!item.is_available ? 'bg-slate-50/50 grayscale opacity-50' : ''}">
+                                <div class="flex-1">
+                                    <h4 class="font-bold text-sm mb-1">${item.name}</h4>
+                                    <p class="font-serif italic text-accent font-bold">$${item.price}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="toggleVisibility(${item.id}, ${item.is_available})" class="w-10 h-10 flex items-center justify-center rounded-full border border-slate-100 text-slate-400 bg-white">
+                                        <span class="material-symbols-rounded text-lg">${item.is_available ? 'visibility' : 'visibility_off'}</span>
+                                    </button>
+                                    <button onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 text-slate-500">
+                                        <span class="material-symbols-rounded text-lg">edit</span>
+                                    </button>
+                                </div>
+                            </div>`).join('') : '<p class="p-6 text-xs text-slate-300 italic text-center">Sin platos en esta sección</p>'}
+                    </div>`;
+                container.appendChild(details);
             });
-
-            Object.keys(grouped).forEach(catId => {
-                if (!renderedCats.has(parseInt(catId))) {
-                    const firstItem = grouped[catId][0];
-                    const catName = firstItem.menu_categories?.name || 'Sin Categoría';
-                    // id: null para que no sea ordenable
-                    container.appendChild(createAccordion({name: catName, id: null}, grouped[catId]));
-                }
-            });
-
-            // Inicializar Sortable después de renderizar
             initSortable();
         }
 
-        function createAccordion(categoryObj, items) {
-            const details = document.createElement('details');
-            
-            if (categoryObj.id) {
-                details.dataset.id = categoryObj.id;
-            }
-            
-            details.className = "group bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-2 transition-colors";
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            t.classList.replace('translate-y-10', 'translate-y-0');
+            setTimeout(() => {
+                t.classList.replace('opacity-100', 'opacity-0');
+                t.classList.replace('translate-y-0', 'translate-y-10');
+            }, 3000);
+        }
 
-            // Icono de arrastre (3 rayas) con clase drag-handle
-            const dragHandle = categoryObj.id 
-                ? `<span class="drag-handle material-symbols-rounded text-slate-400 mr-3 text-2xl hover:text-slate-600 transition p-1" onclick="event.preventDefault();">drag_handle</span>` 
-                : '';
-
-            const summary = document.createElement('summary');
-            summary.className = "flex items-center justify-between px-4 py-3 font-bold text-slate-800 cursor-pointer bg-slate-50 hover:bg-slate-100 transition select-none";
-            summary.innerHTML = `
-                <div class="flex items-center gap-1 flex-1">
-                    ${dragHandle}
-                    <span class="text-base text-slate-700">${categoryObj.name}</span>
-                    <span class="bg-slate-200 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full ml-2">${items.length}</span>
-                </div>
-                
-                <span class="material-symbols-rounded transform group-open:rotate-180 transition text-slate-400">expand_more</span>
-            `;
-
-            const content = document.createElement('div');
-            content.className = "p-2 space-y-2 border-t border-slate-100 bg-white";
-
-            items.forEach(item => {
-                const el = document.createElement('div');
-                const opacity = item.is_available ? 'opacity-100' : 'opacity-50 grayscale';
-                el.className = `flex justify-between items-center p-3 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100 ${opacity}`;
-                
-                el.innerHTML = `
-                    <div class="min-w-0 pr-4">
-                        <h4 class="font-bold text-slate-800 text-sm truncate">${item.name}</h4>
-                        <p class="text-xs text-amber-700 font-mono font-medium">$${item.price}</p>
-                    </div>
-                    <div class="flex gap-1 flex-shrink-0">
-                        <button onclick='toggleVisibility(${item.id}, ${item.is_available})' class="w-8 h-8 flex items-center justify-center rounded-full transition hover:bg-blue-50 text-slate-400 hover:text-blue-600">
-                            <span class="material-symbols-rounded text-lg">${item.is_available ? 'visibility' : 'visibility_off'}</span>
-                        </button>
-                        <button onclick='openEditModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' class="w-8 h-8 flex items-center justify-center rounded-full transition hover:bg-amber-50 text-slate-400 hover:text-amber-600">
-                            <span class="material-symbols-rounded text-lg">edit</span>
-                        </button>
-                    </div>
-                `;
-                content.appendChild(el);
+        function initSortable() {
+            if(sortableInstance) sortableInstance.destroy();
+            sortableInstance = new Sortable(document.getElementById('adminList'), {
+                handle: '.drag-handle', animation: 250,
+                onEnd: async () => {
+                    const ids = Array.from(document.querySelectorAll('details[data-id]')).map(el => el.dataset.id);
+                    for(let i=0; i<ids.length; i++) {
+                        await _supabase.from('menu_categories').update({sort_order: i}).eq('id', ids[i]);
+                    }
+                    showToast("Orden actualizado");
+                }
             });
-
-            details.appendChild(summary);
-            details.appendChild(content);
-            return details;
         }
 
-        function filterList() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = menuItems.filter(i => {
-                const catName = i.menu_categories?.name.toLowerCase() || '';
-                return i.name.toLowerCase().includes(term) || catName.includes(term);
-            });
-            renderList(filtered);
-        }
-
-        async function toggleVisibility(id, currentStatus) {
-            const item = menuItems.find(i => i.id === id);
-            if(item) item.is_available = !currentStatus;
-            filterList();
-
-            const { error } = await _supabase.from('menu_items').update({ is_available: !currentStatus }).eq('id', id);
-            if (error) {
-                if(item) item.is_available = currentStatus;
-                filterList();
-                showToast("Error actualizando", true);
-            }
-        }
-
-        // --- CRUD PLATOS ---
         function openModal() {
             document.getElementById('itemForm').reset();
             document.getElementById('itemId').value = '';
-            document.getElementById('modalTitle').innerText = 'Nuevo Plato';
-            document.getElementById('btnDelete').classList.add('hidden'); 
-            document.getElementById('itemActive').checked = true; 
+            document.getElementById('modalTitle').innerText = 'Nuevo Platillo';
+            document.getElementById('btnDelete').classList.add('hidden');
+            document.getElementById('itemActive').checked = true;
             document.getElementById('itemDialog').showModal();
         }
 
@@ -437,71 +323,48 @@
             document.getElementById('itemCategory').value = item.category_id;
             document.getElementById('itemDesc').value = item.description || '';
             document.getElementById('itemActive').checked = item.is_available;
-            
-            document.getElementById('modalTitle').innerText = 'Editar Plato';
-            document.getElementById('btnDelete').classList.remove('hidden'); 
+            document.getElementById('modalTitle').innerText = 'Editar Platillo';
+            document.getElementById('btnDelete').classList.remove('hidden');
             document.getElementById('itemDialog').showModal();
         }
 
         async function handleSave(e) {
             e.preventDefault();
             const id = document.getElementById('itemId').value;
-            const categoryId = document.getElementById('itemCategory').value;
-
-            if (!categoryId) return showToast("Selecciona una categoría", true);
-
-            const itemData = {
+            const payload = {
                 name: document.getElementById('itemName').value,
-                price: parseInt(document.getElementById('itemPrice').value),
-                category_id: parseInt(categoryId),
+                price: parseFloat(document.getElementById('itemPrice').value),
+                category_id: parseInt(document.getElementById('itemCategory').value),
                 description: document.getElementById('itemDesc').value,
                 is_available: document.getElementById('itemActive').checked
             };
-
-            let res;
-            if (id) res = await _supabase.from('menu_items').update(itemData).eq('id', id);
-            else res = await _supabase.from('menu_items').insert([itemData]);
-
-            if (res.error) {
-                showToast("Error: " + res.error.message, true);
-            } else {
-                document.getElementById('itemDialog').close();
-                showToast(id ? "Plato actualizado" : "Plato creado");
-                fetchMenu();
+            const { error } = id ? await _supabase.from('menu_items').update(payload).eq('id', id) : await _supabase.from('menu_items').insert([payload]);
+            if (!error) { 
+                document.getElementById('itemDialog').close(); 
+                fetchMenu(); 
+                showToast(id ? "Plato actualizado" : "Plato creado"); 
             }
+        }
+
+        async function toggleVisibility(id, status) {
+            await _supabase.from('menu_items').update({is_available: !status}).eq('id', id);
+            fetchMenu();
+            showToast(!status ? "Plato activado" : "Plato oculto");
         }
 
         async function deleteCurrentItem() {
-            if(!confirm("¿Borrar plato?")) return;
-            const id = document.getElementById('itemId').value;
-            const { error } = await _supabase.from('menu_items').delete().eq('id', id);
-            if (error) showToast("Error al borrar", true);
-            else {
+            if(confirm("¿Eliminar este plato de forma permanente?")) {
+                await _supabase.from('menu_items').delete().eq('id', document.getElementById('itemId').value);
                 document.getElementById('itemDialog').close();
-                showToast("Plato eliminado");
                 fetchMenu();
+                showToast("Plato eliminado");
             }
         }
 
-        // --- CRUD CATEGORÍAS ---
-        function openCategoryModal() {
-            document.getElementById('categoryForm').reset();
-            document.getElementById('categoryDialog').showModal();
-        }
-
-        async function handleSaveCategory(e) {
-            e.preventDefault();
-            const name = document.getElementById('catName').value;
-            const order = parseInt(document.getElementById('catOrder').value || 99);
-
-            const { error } = await _supabase.from('menu_categories').insert([{ name: name, sort_order: order }]);
-
-            if (error) showToast("Error al crear categoría", true);
-            else {
-                document.getElementById('categoryDialog').close();
-                fetchCategories(); 
-                showToast("Categoría creada");
-            }
+        function filterList() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = menuItems.filter(i => i.name.toLowerCase().includes(q));
+            renderList(filtered);
         }
     </script>
 </body>
