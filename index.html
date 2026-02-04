@@ -3,17 +3,15 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
-    <title>La Esquina | Menú</title>
+    <title>La Esquina - Menú</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-
    
-    <link rel="icon" href="image-invert-removebg-preview.jpg">
-    
-    <script>
+    <link rel="icon" href="image-invert-removebg-preview.png">
+   <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -45,11 +43,16 @@
         }
 
         .category-btn { @apply transition-all duration-300 ease-in-out border; }
+        
+        /* Animación suave para el switch */
+        .mode-switch-bg {
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
 
-<!-- Buscador Overlay Dinámico -->
+<!-- Buscador Overlay -->
 <div id="search-overlay" class="fixed inset-0 bg-white/98 dark:bg-black/98 z-[100] hidden flex flex-col items-center overflow-y-auto pt-8 px-6">
     <div class="w-full max-w-2xl flex justify-end mb-8">
         <button onclick="toggleSearch()" class="w-12 h-12 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
@@ -58,61 +61,66 @@
     </div>
     
     <div class="w-full max-w-xl text-center mb-12">
-        <h2 class="font-serif text-3xl mb-6 text-slate-900 dark:text-white">¿Qué te apetece hoy?</h2>
+        <h2 class="font-serif text-3xl mb-6 text-slate-900 dark:text-white">Buscador</h2>
         <div class="relative group">
-            <input type="text" id="menu-search" placeholder="Escribe el nombre de un plato..." 
+            <input type="text" id="menu-search" placeholder="Escribe el nombre del plato..." 
                    class="w-full bg-transparent border-b-2 border-slate-200 dark:border-white/10 py-4 text-2xl focus:outline-none focus:border-accent transition-colors text-center font-serif placeholder:text-slate-300 dark:placeholder:text-slate-700 dark:text-white"
                    oninput="handleSearch(this.value)">
         </div>
-        <p id="search-count" class="mt-4 text-[10px] uppercase tracking-widest text-slate-400 font-bold hidden">0 RESULTADOS ENCONTRADOS</p>
+        <p id="search-count" class="mt-4 text-[10px] uppercase tracking-widest text-slate-400 font-bold hidden">0 RESULTADOS</p>
     </div>
 
-    <div id="search-results" class="w-full max-w-2xl pb-20 space-y-8">
-        <!-- Los platos filtrados aparecen aquí -->
-    </div>
+    <div id="search-results" class="w-full max-w-2xl pb-20 space-y-8"></div>
 </div>
 
-<header class="bg-white/80 dark:bg-black/60 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100 dark:border-white/5">
-    <div class="px-6 pt-4 pb-2 flex flex-col gap-4">
+<header class="bg-white/80 dark:bg-black/60 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100 dark:border-white/5 transition-all duration-300">
+    <div class="px-6 pt-4 pb-2 flex flex-col gap-5">
+        <!-- Top Bar -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-<!-- Logo simplificado sin fondo circular -->
-<img 
-    src="image-invert-removebg-preview.jpg" 
-    alt="Logo La Esquina" 
-    class="h-8 w-auto object-contain"
->
-
-<span class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-600 dark:text-slate-400">La Esquina</span>
+                <img src="image-invert-removebg-preview.png" alt="Logo La Esquina" class="h-8 w-auto object-contain">
+                <span class="text-[10px] font-bold tracking-[0.3em] uppercase text-slate-600 dark:text-slate-400">La Esquina</span>
             </div>
             
             <div class="flex items-center gap-5">
                 <button onclick="toggleSearch()" class="text-slate-500 hover:text-accent transition-colors">
                     <span class="material-symbols-outlined text-2xl">search</span>
                 </button>
-                <a href="www.instagram.com/laesquinard" class="text-slate-500 hover:text-accent transition-colors">
+                <a href="https://www.instagram.com/laesquinard" target="_blank" class="text-slate-500 hover:text-accent transition-colors">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.269-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                 </a>
             </div>
         </div>
 
-        <div class="flex flex-col gap-6">
-            <h1 class="font-serif text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                Nuestro <span class="italic font-light">Menú</span>
-            </h1>
-            <div id="category-filters" class="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
-                <button id="btn-all" onclick="filterMenu('all', this)" class="category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase bg-primary text-white dark:bg-white dark:text-black border-transparent">
-                    Todos
-                </button>
-            </div>
+        <h1 class="font-serif text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-none">
+            Nuestro <span class="italic font-light">Menú</span>
+        </h1>
+
+        <!-- SWITCHER CORREGIDO: Forma Píldora Completa -->
+        <!-- p-1 (4px padding) para un margen uniforme alrededor del indicador -->
+        <div class="relative bg-slate-100 dark:bg-white/10 p-1 rounded-full flex mb-2">
+            <!-- Indicador deslizante: shadow-sm sutil, sin shadow-inner en el contenedor -->
+            <!-- w-[calc(50%-4px)] compensa exactamente el padding de 4px (left-1) -->
+            <div id="mode-indicator" class="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-primary shadow-sm rounded-full mode-switch-bg z-0"></div>
+            
+            <button onclick="switchMode('food')" id="btn-mode-food" class="flex-1 relative z-10 py-2.5 text-center font-serif text-sm tracking-widest uppercase transition-colors duration-300 text-primary dark:text-white font-bold rounded-full">
+                Cocina
+            </button>
+            <button onclick="switchMode('wine')" id="btn-mode-wine" class="flex-1 relative z-10 py-2.5 text-center font-serif text-sm tracking-widest uppercase transition-colors duration-300 text-slate-400 font-medium rounded-full">
+                Vinos
+            </button>
+        </div>
+
+        <div id="category-filters" class="flex gap-3 overflow-x-auto hide-scrollbar pb-3">
+            <!-- Categorías dinámicas -->
         </div>
     </div>
 </header>
 
-<main id="menu-container" class="mt-8 px-6 space-y-16 pb-12 flex-grow">
+<main id="menu-container" class="mt-8 px-6 space-y-16 pb-12 flex-grow min-h-[50vh]">
     <div id="loader" class="flex flex-col items-center justify-center py-20 gap-4">
         <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
-        <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Preparando el menú...</span>
+        <span class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Preparando...</span>
     </div>
 </main>
 
@@ -130,6 +138,8 @@
     
     let allCategories = [];
     let allItems = [];
+    let appMode = 'food'; 
+    let activeCategoryId = 'all';
 
     async function loadData() {
         try {
@@ -140,31 +150,116 @@
             
             allCategories = categories;
             allItems = items;
-
-            renderCategories();
-            renderItems(allItems, 'menu-container');
+            updateUI();
         } catch (err) {
-            console.error("Error cargando el menú:", err);
-            document.getElementById('menu-container').innerHTML = `<p class="text-center text-red-400 italic py-20">Error al conectar con la cocina.</p>`;
+            console.error("Error:", err);
+            document.getElementById('menu-container').innerHTML = `<p class="text-center text-red-400 italic py-20">Error de conexión.</p>`;
         }
+    }
+
+    function switchMode(mode) {
+        if (appMode === mode) return;
+        appMode = mode;
+        activeCategoryId = 'all'; 
+        updateUI();
+    }
+
+    function updateUI() {
+        updateModeSwitcherStyles();
+        renderCategories();
+        filterMenu('all'); 
+    }
+
+    function updateModeSwitcherStyles() {
+        const indicator = document.getElementById('mode-indicator');
+        const btnFood = document.getElementById('btn-mode-food');
+        const btnWine = document.getElementById('btn-mode-wine');
+
+        if (appMode === 'food') {
+            // Posición 0: Alineado a la izquierda (respetando el padding del contenedor)
+            indicator.style.transform = 'translateX(0)';
+            
+            btnFood.classList.remove('text-slate-400', 'font-medium');
+            btnFood.classList.add('text-primary', 'dark:text-white', 'font-bold');
+            
+            btnWine.classList.remove('text-primary', 'dark:text-white', 'font-bold');
+            btnWine.classList.add('text-slate-400', 'font-medium');
+        } else {
+            // Posición 100%: Se mueve exactamente el ancho del elemento, ocupando el lado derecho.
+            // Al usar calc(50% - 4px) de ancho, translateX(100%) lo coloca en la mitad derecha perfecta.
+            indicator.style.transform = 'translateX(100%)'; 
+
+            btnFood.classList.remove('text-primary', 'dark:text-white', 'font-bold');
+            btnFood.classList.add('text-slate-400', 'font-medium');
+            
+            btnWine.classList.remove('text-slate-400', 'font-medium');
+            btnWine.classList.add('text-primary', 'dark:text-white', 'font-bold');
+        }
+    }
+
+    function isWineCategory(catName) {
+        const lower = catName.toLowerCase();
+        return lower.includes('vino') || lower.includes('champagne') || lower.includes('cava') || lower.includes('espumoso') || lower.includes('bebida');
     }
 
     function renderCategories() {
         const container = document.getElementById('category-filters');
-        
-        // Obtenemos los IDs de las categorías que realmente tienen platos disponibles
-        const usedCategoryIds = [...new Set(allItems.map(item => item.category_id))];
+        container.innerHTML = '';
 
-        allCategories.forEach(cat => {
-            // Solo creamos el botón si la categoría tiene platos
-            if (usedCategoryIds.includes(cat.id)) {
-                const btn = document.createElement('button');
-                btn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-slate-100 dark:border-white/10 bg-white dark:bg-white/5 text-slate-500";
-                btn.innerText = cat.name;
-                btn.onclick = () => filterMenu(cat.id, btn);
-                container.appendChild(btn);
-            }
+        const visibleCategories = allCategories.filter(cat => {
+            const isWine = isWineCategory(cat.name);
+            return appMode === 'wine' ? isWine : !isWine;
         });
+
+        const usedCategoryIds = [...new Set(allItems.map(item => item.category_id))];
+        const categoriesToRender = visibleCategories.filter(cat => usedCategoryIds.includes(cat.id));
+
+        if (categoriesToRender.length === 0) {
+            container.innerHTML = '<span class="text-xs text-slate-400 py-2 italic px-1">No hay categorías disponibles</span>';
+            return;
+        }
+
+        const allBtn = document.createElement('button');
+        allBtn.id = 'btn-cat-all';
+        allBtn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-transparent bg-primary text-white dark:bg-white dark:text-black";
+        allBtn.innerText = "Todos";
+        allBtn.onclick = () => filterMenu('all');
+        container.appendChild(allBtn);
+
+        categoriesToRender.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.id = `btn-cat-${cat.id}`;
+            btn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-slate-200 dark:border-white/10 bg-transparent text-slate-500 hover:border-slate-300";
+            btn.innerText = cat.name;
+            btn.onclick = () => filterMenu(cat.id);
+            container.appendChild(btn);
+        });
+    }
+
+    function filterMenu(catId) {
+        activeCategoryId = catId;
+        
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-slate-200 dark:border-white/10 bg-transparent text-slate-500 hover:border-slate-300 transition-all";
+        });
+        
+        const activeBtn = document.getElementById(catId === 'all' ? 'btn-cat-all' : `btn-cat-${catId}`);
+        if(activeBtn) {
+            activeBtn.className = "category-btn flex-shrink-0 px-6 py-2 rounded-full font-bold text-[11px] tracking-widest uppercase border border-primary dark:border-white bg-primary text-white dark:bg-white dark:text-black shadow-lg shadow-primary/20 dark:shadow-white/10 transform scale-105";
+        }
+
+        const categoriesInMode = allCategories.filter(cat => {
+            const isWine = isWineCategory(cat.name);
+            return appMode === 'wine' ? isWine : !isWine;
+        }).map(c => c.id);
+
+        let filteredItems = allItems.filter(item => categoriesInMode.includes(item.category_id));
+
+        if (catId !== 'all') {
+            filteredItems = filteredItems.filter(i => i.category_id === catId);
+        }
+
+        renderItems(filteredItems, 'menu-container');
     }
 
     function renderItems(itemsToRender, targetId) {
@@ -172,7 +267,8 @@
         container.innerHTML = "";
 
         if (itemsToRender.length === 0) {
-            container.innerHTML = `<p class="text-center text-slate-400 py-10 italic">No hay platos que coincidan.</p>`;
+            const msg = appMode === 'food' ? "No hay platos disponibles." : "Nuestra selección de vinos llegará pronto.";
+            container.innerHTML = `<div class="flex flex-col items-center justify-center py-20 text-slate-300"><span class="material-symbols-outlined text-4xl mb-2">restaurant_menu</span><p class="italic font-serif">${msg}</p></div>`;
             return;
         }
 
@@ -181,13 +277,13 @@
                 const catItems = itemsToRender.filter(i => i.category_id === cat.id);
                 if (catItems.length > 0) {
                     const section = document.createElement('section');
-                    section.className = "menu-section mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500";
+                    section.className = "menu-section mb-12 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-backwards";
                     section.innerHTML = `
-                        <div class="flex items-center gap-4 mb-10">
-                            <h2 class="text-[10px] font-black tracking-[0.5em] uppercase text-slate-300 dark:text-slate-600">${cat.name}</h2>
-                            <div class="h-[1px] flex-1 bg-slate-100 dark:bg-white/5"></div>
+                        <div class="flex items-center gap-4 mb-8 sticky top-[180px] bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm py-3 z-30 -mx-2 px-2 transition-all">
+                            <h2 class="text-[11px] font-black tracking-[0.4em] uppercase text-accent">${cat.name}</h2>
+                            <div class="h-[1px] flex-1 bg-slate-200 dark:bg-white/10"></div>
                         </div>
-                        <div class="grid gap-10">
+                        <div class="grid gap-x-8 gap-y-10 md:grid-cols-2">
                             ${catItems.map(item => generateItemHTML(item)).join('')}
                         </div>
                     `;
@@ -195,40 +291,26 @@
                 }
             });
         } else {
-            container.innerHTML = `<div class="grid gap-10">${itemsToRender.map(item => generateItemHTML(item)).join('')}</div>`;
+            container.innerHTML = `<div class="grid gap-8">${itemsToRender.map(item => generateItemHTML(item)).join('')}</div>`;
         }
     }
 
     function generateItemHTML(item) {
         return `
-            <div class="group">
-                <div class="flex justify-between items-baseline mb-3">
-                    <h3 class="font-bold text-lg tracking-tight text-slate-900 dark:text-white uppercase">${item.name}</h3>
-                    <div class="h-[1px] flex-1 mx-4 border-b border-dotted border-slate-200 dark:border-white/10"></div>
-                    <span class="font-serif italic font-bold text-black dark:text-white text-2xl">$${item.price}</span>
+            <div class="group relative">
+                <div class="flex justify-between items-baseline mb-2">
+                    <h3 class="font-serif font-bold text-xl text-slate-900 dark:text-white leading-tight group-hover:text-accent transition-colors">${item.name}</h3>
+                    <div class="flex-grow mx-3 border-b border-dotted border-slate-300 dark:border-white/20 relative top-[-6px]"></div>
+                    <span class="font-sans font-bold text-lg text-slate-800 dark:text-slate-200 whitespace-nowrap">$${item.price}</span>
                 </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-[85%]">${item.description || ''}</p>
+                ${item.description ? `<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-light opacity-90">${item.description}</p>` : ''}
             </div>
         `;
-    }
-
-    function filterMenu(id, targetBtn) {
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black', 'border-transparent');
-            btn.classList.add('bg-white', 'text-slate-500', 'dark:bg-white/5', 'border-slate-100', 'dark:border-white/10');
-        });
-
-        targetBtn.classList.remove('bg-white', 'text-slate-500', 'dark:bg-white/5', 'border-slate-100', 'dark:border-white/10');
-        targetBtn.classList.add('bg-primary', 'text-white', 'dark:bg-white', 'dark:text-black', 'border-transparent');
-
-        const filtered = id === 'all' ? allItems : allItems.filter(i => i.category_id === id);
-        renderItems(filtered, 'menu-container');
     }
 
     function toggleSearch() {
         const overlay = document.getElementById('search-overlay');
         const isHidden = overlay.classList.contains('hidden');
-        
         if (isHidden) {
             overlay.classList.remove('hidden');
             setTimeout(() => document.getElementById('menu-search').focus(), 100);
@@ -242,25 +324,17 @@
 
     function handleSearch(query) {
         const term = query.toLowerCase().trim();
-        const countLabel = document.getElementById('search-count');
-        const resultsContainer = document.getElementById('search-results');
-
         if (term.length === 0) {
-            resultsContainer.innerHTML = "";
-            countLabel.classList.add('hidden');
+            document.getElementById('search-results').innerHTML = "";
+            document.getElementById('search-count').classList.add('hidden');
             return;
         }
-
         const filtered = allItems.filter(i => 
-            i.name.toLowerCase().includes(term) || 
-            (i.description && i.description.toLowerCase().includes(term))
+            i.name.toLowerCase().includes(term) || (i.description && i.description.toLowerCase().includes(term))
         );
-
-        countLabel.innerText = `${filtered.length} RESULTADOS ENCONTRADOS`;
-        countLabel.classList.remove('hidden');
-        
+        document.getElementById('search-count').innerText = `${filtered.length} RESULTADOS`;
+        document.getElementById('search-count').classList.remove('hidden');
         renderItems(filtered, 'search-results');
-        renderItems(filtered, 'menu-container');
     }
 
     document.addEventListener('DOMContentLoaded', loadData);
@@ -268,5 +342,3 @@
 
 </body>
 </html>
-
-
